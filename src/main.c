@@ -4,8 +4,6 @@
 
 #include "hello_tiles.h"
 
-uint8_t free_time;
-
 int main(void)
 {
     uint8_t i, keys;
@@ -70,13 +68,25 @@ int main(void)
     OAM[7].tile = 0;
     OAM[7].ctrl = 0;
     
+	// Initialize PTM_C in 16-bit mode
+	TMR3_CTRL = 0x0082;
+	TMR3_SCALE = 0x08;
+	TMR3_OSC = 0;
+
+	// Initialize volume
+	AUD_CTRL &= 0xFC; // this is the default
+	AUD_VOL = 2; // 50% volume
+
+	// Generate square wave at A4, ~440 Hz
+	TMR3_PRE = 4544;
+	TMR3_PVT = 2272; // half of PRE = 50% pulse width
+
+	// Enable timer
+	TMR3_CTRL_L = 0x04;
+
     for(;;) {
-        TMR1_OSC = 0x11; // Use Oscillator 2 (31768Hz)
-        TMR1_SCALE = 0x08 | 0x02; // Scale 2 (8192 Hz)
-        TMR1_CTRL = 0x06; // Enable timer 2 at 0
         wait_vsync();
-        TMR1_CTRL = 0; // Pause timer
-        free_time = 255-TMR1_CNT_L;
+	    TMR1_OSC = 0;
         
         keys = ~KEY_PAD;
 
@@ -84,7 +94,16 @@ int main(void)
         // So simply set the invert flag on the object which matches the set bit..
         for (i = 0; i < 8; i++) {
             if (keys & (1 << i)) {
-                OAM[i].ctrl = OAM_INVERT | OAM_ENABLE;
+                if (!(OAM[i].ctrl & OAM_ENABLE)) {
+                    // Play sound
+	                TMR1_OSC |= 0x20;
+
+                    // Show sprite
+                    OAM[i].ctrl = OAM_INVERT | OAM_ENABLE;
+
+                    // Wait one frame so we can hear the sound
+                    wait_vsync();
+                }
             } else {
                 OAM[i].ctrl = ~(OAM_INVERT | OAM_ENABLE);
             }
