@@ -12,8 +12,8 @@ int main(void)
     PRC_RATE = RATE_36FPS;
 
     // Hack for now, todo: build proper background
-    PRC_MAP = hello_tiles;
-    PRC_SPR = hello_tiles;
+    PRC_MAP = background_tiles;
+    PRC_SPR = sprite_tiles;
 
     // Hack for now, todo: build proper background
     /*for (i=0; i<16*12; i++) {
@@ -21,51 +21,51 @@ int main(void)
     }*/
    
     // A
-    OAM[0].x = 16 * 6;
+    OAM[0].x = 16 * 6 - 8;
     OAM[0].y = 16 * 2 + 8;
     OAM[0].tile = 0;
     OAM[0].ctrl = 0;
     
     // B
-    OAM[1].x = 16 * 5;
+    OAM[1].x = 16 * 5 - 8;
     OAM[1].y = 16 * 3 + 8;
-    OAM[1].tile = 0;
+    OAM[1].tile = 1;
     OAM[1].ctrl = 0;
     
     // C
-    OAM[2].x = 16 * 6;
-    OAM[2].y = 16;
-    OAM[2].tile = 0;
+    OAM[2].x = 16 * 6 - 4;
+    OAM[2].y = 16 + 4;
+    OAM[2].tile = 2;
     OAM[2].ctrl = 0;
     
     // UP
     OAM[3].x = 16 * 2;
     OAM[3].y = 16 * 2 + 8;
-    OAM[3].tile = 0;
+    OAM[3].tile = 3;
     OAM[3].ctrl = 0;
     
     // DOWN
     OAM[4].x = 16 * 2;
     OAM[4].y = 16 * 4 - 8;
-    OAM[4].tile = 0;
+    OAM[4].tile = 4;
     OAM[4].ctrl = 0;
     
     // LEFT
     OAM[5].x = 16 + 8;
     OAM[5].y = 16 * 3;
-    OAM[5].tile = 0;
+    OAM[5].tile = 5;
     OAM[5].ctrl = 0;
 
     // RIGHT
     OAM[6].x = 16 * 3 - 8;
     OAM[6].y = 16 * 3;
-    OAM[6].tile = 0;
+    OAM[6].tile = 6;
     OAM[6].ctrl = 0;
     
     // POWER
-    OAM[7].x = 16 * 4;
+    OAM[7].x = 16 * 4 - 8;
     OAM[7].y = 16 * 2;
-    OAM[7].tile = 0;
+    OAM[7].tile = 7;
     OAM[7].ctrl = 0;
     
 	// Initialize PTM_C in 16-bit mode
@@ -99,13 +99,13 @@ int main(void)
 	                TMR1_OSC |= 0x20;
 
                     // Show sprite
-                    OAM[i].ctrl = OAM_INVERT | OAM_ENABLE;
+                    OAM[i].ctrl = OAM_ENABLE;
 
                     // Wait one frame so we can hear the sound
                     wait_vsync();
                 }
             } else {
-                OAM[i].ctrl = ~(OAM_INVERT | OAM_ENABLE);
+                OAM[i].ctrl = ~OAM_ENABLE;
             }
         }
     }
