@@ -24,49 +24,49 @@ int main(void)
     OAM[0].x = 16 * 6 - 8;
     OAM[0].y = 16 * 2 + 8;
     OAM[0].tile = 0;
-    OAM[0].ctrl = 0;
+    OAM[0].ctrl = OAM_ENABLE | OAM_INVERT;
     
     // B
     OAM[1].x = 16 * 5 - 8;
     OAM[1].y = 16 * 3 + 8;
     OAM[1].tile = 1;
-    OAM[1].ctrl = 0;
+    OAM[1].ctrl = OAM_ENABLE | OAM_INVERT;
     
     // C
     OAM[2].x = 16 * 6 - 4;
     OAM[2].y = 16 + 4;
     OAM[2].tile = 2;
-    OAM[2].ctrl = 0;
+    OAM[2].ctrl = OAM_ENABLE | OAM_INVERT;
     
     // UP
     OAM[3].x = 16 * 2;
     OAM[3].y = 16 * 2 + 8;
     OAM[3].tile = 3;
-    OAM[3].ctrl = 0;
+    OAM[3].ctrl = OAM_ENABLE | OAM_INVERT;
     
     // DOWN
     OAM[4].x = 16 * 2;
     OAM[4].y = 16 * 4 - 8;
     OAM[4].tile = 4;
-    OAM[4].ctrl = 0;
+    OAM[4].ctrl = OAM_ENABLE | OAM_INVERT;
     
     // LEFT
     OAM[5].x = 16 + 8;
     OAM[5].y = 16 * 3;
     OAM[5].tile = 5;
-    OAM[5].ctrl = 0;
+    OAM[5].ctrl = OAM_ENABLE | OAM_INVERT;
 
     // RIGHT
     OAM[6].x = 16 * 3 - 8;
     OAM[6].y = 16 * 3;
     OAM[6].tile = 6;
-    OAM[6].ctrl = 0;
+    OAM[6].ctrl = OAM_ENABLE | OAM_INVERT;
     
     // POWER
     OAM[7].x = 16 * 4 - 8;
     OAM[7].y = 16 * 2;
     OAM[7].tile = 7;
-    OAM[7].ctrl = 0;
+    OAM[7].ctrl = OAM_ENABLE | OAM_INVERT;
     
 	// Initialize PTM_C in 16-bit mode
 	TMR3_CTRL = 0x0082;
@@ -90,22 +90,22 @@ int main(void)
         
         keys = ~KEY_PAD;
 
-        // Each sprite in the OEM is indexed by the bit position of the key pad enum
+        // Each sprite in the OAM is indexed by the bit position of the key pad enum
         // So simply set the invert flag on the object which matches the set bit..
         for (i = 0; i < 8; i++) {
             if (keys & (1 << i)) {
-                if (!(OAM[i].ctrl & OAM_ENABLE)) {
+                if ((OAM[i].ctrl & OAM_INVERT)) {
                     // Play sound
 	                TMR1_OSC |= 0x20;
 
                     // Show sprite
-                    OAM[i].ctrl = OAM_ENABLE;
+                    OAM[i].ctrl &= ~OAM_INVERT;
 
                     // Wait one frame so we can hear the sound
                     wait_vsync();
                 }
             } else {
-                OAM[i].ctrl = ~OAM_ENABLE;
+                OAM[i].ctrl |= OAM_INVERT;
             }
         }
     }
