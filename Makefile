@@ -3,4 +3,4 @@ TARGET = controllertest
 C_SOURCES := src\isr.c src\main.c
 ASM_SOURCES := src\startup.asm
 
-include ../../pm.mk
+include c88-pokemini/pm.mk
