@@ -1,4 +1,5 @@
 #include "pm.h"
+#include "common.h"
 
 #include <stdint.h>
 
@@ -67,8 +68,8 @@ void setup_oam_sprites()
 void initialize_audio_and_timer()
 {
     // Initialize PTM_C in 16-bit mode
-    TMR3_CTRL = 0x0082;
-    TMR3_SCALE = 0x08;
+    TMR3_CTRL = 0x0082; // Reset, 16 bit mode
+    TMR3_SCALE = 0x08; // Enable Hi
     TMR3_OSC = 0;
 
     // Initialize volume
@@ -76,11 +77,27 @@ void initialize_audio_and_timer()
     AUD_VOL = 2;      // 50% volume
 
     // Generate square wave at A4, ~440 Hz
-    TMR3_PRE = 4544;
-    TMR3_PVT = 2272; // half of PRE = 50% pulse width
+    TMR3_PRE = 4544; // Preset
+    TMR3_PVT = 2272; // Pivot, half of PRE = 50% pulse width
 
     // Enable timer
-    TMR3_CTRL_L = 0x04;
+    TMR3_CTRL_L = 0x04; // Enable
+}
+
+uint32_t sec = 0;
+
+void play_sound(void)
+{
+    TMR1_OSC |= 0x20; // Use Oscillator 1 (CPU)
+    sec = SEC_CNT;
+}
+
+void clear_sound_if_one_second_elapsed(void)
+{
+    if ((TMR1_OSC & 0x20) && ((SEC_CNT - sec) > 1))
+    {
+        TMR1_OSC = 0;
+    }
 }
 
 int main(void)
@@ -105,9 +122,17 @@ int main(void)
     for (;;)
     {
         wait_vsync();
-        TMR1_OSC = 0;
+
+        clear_sound_if_one_second_elapsed();
 
         keys = ~KEY_PAD;
+
+        // If any other key than power is pressed, reset the counter that enables
+        // us to shutdown after 3 consecutive presses of power back to 0
+        if (keys & ~KEY_POWER)
+        {
+            pressed_power_count = 0;
+        }
 
         // Each sprite in the OAM is indexed by the bit position of the key pad enum
         // So simply set the invert flag on the object which matches the set bit..
@@ -118,13 +143,10 @@ int main(void)
                 if ((OAM[i].ctrl & OAM_INVERT))
                 {
                     // Play sound
-                    TMR1_OSC |= 0x20;
+                    play_sound();
 
                     // Show sprite
                     OAM[i].ctrl &= ~OAM_INVERT;
-
-                    // Wait one frame so we can hear the sound
-                    wait_vsync();
                 }
             }
             else
